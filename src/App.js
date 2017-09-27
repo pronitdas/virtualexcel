@@ -1,20 +1,22 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import VirtualGrid from "./components/MultiGrid/VirtualGrid";
+import { Row , Col } from 'react-bootstrap';
 
 class App extends Component {
   render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
-    );
+      return (
+
+              <Row className="show-grid">
+                  <Col xs={8} md={8}>
+                      <div className="m-t-50 ">
+                          <VirtualGrid />
+                      </div>
+
+                  </Col>
+              </Row>
+
+      );
   }
 }
 
