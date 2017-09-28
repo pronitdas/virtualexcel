@@ -1,5 +1,129 @@
 body {
-  margin-top: 150px;
-  margin-right: 50px;
-  background-color: #e1e1e1;
+background-color: white;
+}
+
+.container{
+    width:100%;
+}
+
+/**  =====================
+      Font-classes start
+==========================  **/
+/*========== Font Size ===========*/
+
+.f-12 {
+    font-size: 12px;
+}
+.f-13 {
+    font-size: 13px;
+}
+.f-14 {
+    font-size: 14px;
+}
+.f-15{
+    font-size: 15px !important;
+}
+.f-16 {
+    font-size: 16px;
+}
+.f-18 {
+    font-size: 18px;
+}
+.f-20 {
+    font-size: 20px;
+}
+.f-24 {
+    font-size: 24px;
+}
+.f-26 {
+    font-size: 26px !important;
+}
+.f-28 {
+    font-size: 28px;
+}
+.f-30 {
+    font-size: 30px;
+}
+.f-35 {
+    font-size: 35px;
+}
+.f-40 {
+    font-size: 40px;
+}
+.f-45 {
+    font-size: 45px;
+}
+.f-52 {
+    font-size: 52px;
+}
+.f-64 {
+    font-size: 64px;
+}
+.f-90 {
+    font-size: 90px;
+}
+.f-120 {
+    font-size: 120px;
+}
+/*========== Font Weight ===========*/
+
+.f-w-100 {
+    font-weight: 100;
+}
+.f-w-300 {
+    font-weight: 300;
+}
+.f-w-400 {
+    font-weight: 400;
+}
+.f-w-600 {
+    font-weight: 600;
+}
+.f-w-700 {
+    font-weight: 700;
+}
+.f-w-900 {
+    font-weight: 900;
+}
+/*========== Font Style ===========*/
+
+.f-normal {
+    font-style: normal;
+}
+.f-italic {
+    font-style: italic;
+}
+.f-oblique {
+    font-style: oblique;
+}
+.f-bold {
+    font-weight: bold;
+}
+.f-thin {
+    font-weight: lighter;
+}
+
+
+/** Text Align **/
+
+.text-center {
+    text-align: center;
+}
+.text-left {
+    text-align: left;
+}
+.text-right {
+    text-align: right;
+}
+.text-overline {
+    text-decoration: overline;
+}
+.text-through {
+    text-decoration: line-through;
+}
+.text-underline {
+    text-decoration: underline;
+}
+.text-plain {
+    text-decoration: none;
 }

@@ -1,19 +1,13 @@
-.Cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid #eee;
-  border-right: 1px solid #eee;
+
+
+.no-overflow {
+  white-space: nowrap;
+  width: 100px;
+  overflow: hidden;
+  text-overflow:ellipsis;
 }
 
-.Header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid #eee;
-  border-right: 1px solid #eee;
-  max-width: 100%;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+.no-overflow:hover {
+  text-overflow: inherit;
+  overflow: visible;
 }
