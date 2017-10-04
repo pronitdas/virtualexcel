@@ -1,23 +1,17 @@
 import React, { Component } from 'react';
-import {AutoSizer, CellMeasurer, CellMeasurerCache, MultiGrid} from 'react-virtualized';
+import {AutoSizer, CellMeasurerCache, MultiGrid} from 'react-virtualized';
 import "./MultiGrid.example.css";
 import * as _ from "lodash";
-
 import { LabeledInput } from "./LabeledInput";
-const data = require("../../../src/data.json");
-const columnKeys = _.keysIn(data[0]);
-let defaultColumnIndices = _.times(columnKeys.length, String);
-let defaultRowIndices = _.times(data.length , String);
 
 const STYLE_BOTTOM_RIGHT_GRID= {
     border: "1px solid #ddd",
-    verticalAlign:"middle"
+    verticalAlign:"middle",
 };
 const STYLE_BOTTOM_LEFT_GRID = {
     backgroundColor: "lightblue",
-    overflow:"hidden",
     textOverflow: "ellipsis",
-    verticalAlign:"middle"
+    verticalAlign:"middle",
 };
 const STYLE_TOP_LEFT_GRID = {
     borderBottom: "2px solid #aaa",
@@ -53,7 +47,6 @@ const STYLE_CELL = {
         textOverflow: "ellipsis",
         paddingLeft:"20px",
         paddingRight:"20px",
-        overflow: "hidden",
         verticalAlign:"middle"
 
 };
@@ -61,19 +54,30 @@ const STYLE_CELL = {
 class VirtualGrid extends Component {
 
     componentDidMount(){
+        const { data , columnKeys} = this.props;
         this.rearrangeData();
+
+        let arrayOfdata = _.map(data , (a)=>{
+            return _.map(_.keysIn(a) ,(b)=>{
+               return a[b];
+            });
+        });
+
+        arrayOfdata = _.concat([columnKeys] , arrayOfdata);
     }
 
     rearrangeData() {
-        const { lockedColumnIndices , lockedRowIndices} = this.props;
+        const { lockedColumnIndices , lockedRowIndices ,columnKeys , data} = this.props;
         let columnIndices = _.times(columnKeys.length, String);
         let rowIndices = _.times(data.length , String);
+        console.log("lockedRowIndices",lockedRowIndices);
+        console.log("lockedColumnIndices",lockedColumnIndices);
         if(lockedColumnIndices){
 
             let numbers = _.map(lockedColumnIndices , (a)=> a.toString());
             columnIndices =_.difference(columnIndices , numbers);
             columnIndices =_.concat(numbers , columnIndices);
-
+            console.log(columnIndices);
             this.setState({fixedColumnCount:lockedColumnIndices.length});
         }
         if(lockedRowIndices){
@@ -105,6 +109,8 @@ class VirtualGrid extends Component {
             headerStyle:STYLE_HEADER,
             TopLeftGridStyle:STYLE_TOP_LEFT_GRID,
             TopRightGridStyle:STYLE_TOP_RIGHT_GRID,
+            hoveredColumnIndex:null,
+            hoveredRowIndex:null,
         };
         this._cache = new CellMeasurerCache({
             defaultHeight: 30,
@@ -112,46 +118,48 @@ class VirtualGrid extends Component {
             fixedHeight: true
         });
         this._cellRenderer = this._cellRenderer.bind(this);
+        this.onMouseOver=this.onMouseOver.bind(this);
     }
 
     componentWillReceiveProps(nextProps){
-        console.log("newprops", nextProps);
+        const { primaryColor , secondaryColor} = this.props;
+        if(!_.isEqual(primaryColor , nextProps.primaryColor || !_.isEqual(secondaryColor ,nextProps.secondaryColor) )){
+            this.setState({scrollToRow:0 ,scrollToColumn:0 });
+        }
+    }
+    onMouseOver(columnIndex , rowIndex) {
+        this.setState({
+            hoveredColumnIndex: columnIndex,
+            hoveredRowIndex: rowIndex
+        });
     }
 
     _cellRenderer({ columnIndex, key, parent, rowIndex, style }) {
-       let { rowIndices , columnIndices} = this.state;
-       const { primaryColor , secondaryColor , headerColor, headerFontSize , cellFontSize} = this.props;
+       let { rowIndices , columnIndices , hoveredColumnIndex , hoveredRowIndex} = this.state;
+       const { primaryColor , secondaryColor , headerColor, headerFontSize , cellFontSize, columnKeys, data} = this.props;
         if(!rowIndices || !columnIndices){
-            rowIndices = defaultRowIndices;
-            columnIndices = defaultColumnIndices;
+            rowIndices = _.times(columnKeys.length, String);;
+            columnIndices = _.times(data.length , String);
         }
         if(rowIndex === 0){
             style = _.assign(style,STYLE_HEADER , {backgroundColor:headerColor,color:"white" , fontSize:headerFontSize});
             return (
-                <CellMeasurer
-                    cache={this._cache}
-                    columnIndex={columnIndex}
-                    key={key}
-                    parent={parent}
-                    rowIndex={rowIndex}
-                >
-                    <div key={`${columnIndex}${rowIndex}`} className="font-weight-bold" style={style}>
+                    <div key={`${columnIndex}${rowIndex}`} title={_.startCase(columnKeys[columnIndices[columnIndex]])} className={`font-weight-bold  col${columnIndex}`} id="col" style={style}>
                         <span className="align-middle">
                             <strong> {_.startCase(columnKeys[columnIndices[columnIndex]])} </strong>
                         </span>
                     </div>
-                </CellMeasurer>
             );
         } else {
-            if(data[rowIndices[rowIndex]][columnKeys[columnIndices[columnIndex]]].toString() < 20){
-                style = _.assign(style,STYLE_CELL ,{alignItems: "center"});
-            } else{
-                style = _.assign(style,STYLE_CELL);
-            }
-            style = _.assign(style,{fontSize:cellFontSize});
+                if(data[rowIndices[rowIndex]][columnKeys[columnIndices[columnIndex]]].toString() < 20){
+                    style = _.assign(style,STYLE_CELL ,{alignItems: "center"});
+                } else{
+                    style = _.assign(style,STYLE_CELL);
+                }
+                style = _.assign(style,{fontSize:cellFontSize});
 
-            //alternate colour logic
-            // if(lockedColumnIndices.length === 0 && lockedRowIndices.length === 1){
+                //alternate colour logic
+                // if(lockedColumnIndices.length === 0 && lockedRowIndices.length === 1){
                 if(rowIndex% 2===0 ){
                     let backgroundColor = primaryColor ? primaryColor : "white";
                     // let color = primaryColor ? "white" : "black";
@@ -164,23 +172,16 @@ class VirtualGrid extends Component {
                     let color =  "black";
                     style = _.assign(style,{backgroundColor ,color});
                 }
-            // }
+                // }
 
-            return (
-                <CellMeasurer
-                    cache={this._cache}
-                    columnIndex={columnIndex}
-                    key={key}
-                    parent={parent}
-                    rowIndex={rowIndex}
-                >
-                    <div className="no-overflow" key={key} style={style}>
-                       <span className="align-middle" style = {{paddingTop:"15px"}}>
-                           {data[rowIndices[rowIndex]][columnKeys[columnIndices[columnIndex]]].toString()}
-                       </span>
+                let className = (hoveredColumnIndex || hoveredRowIndex) ? `hoveredItem` : ``;
+                return (
+                    <div className={`no-overflow col${columnIndex} ${className}` }  title={data[rowIndices[rowIndex]][columnKeys[columnIndices[columnIndex]]].toString()} key={key} style={style}>
+                        <p onMouseOver={this.onMouseOver(columnIndex,rowIndex)} className={'align-middle truncate item'}>
+                            {data[rowIndices[rowIndex]][columnKeys[columnIndices[columnIndex]]].toString()}
+                        </p>
                     </div>
-                </CellMeasurer>
-            );
+                );
         }
     }
 
@@ -219,16 +220,13 @@ class VirtualGrid extends Component {
         lockedColumnIndices !== nextProps.lockedColumnIndices||
         headerColor !== nextProps.headerColor
         );
-
-
     }
-
 
     render() {
         const {TopLeftGridStyle,TopRightGridStyle , BottomLeftGridStyle,BottomRightGridStyle} = this.state;
-        const {componentHeight} = this.props;
+        const {componentHeight , data , columnKeys} = this.props;
         return (
-            <AutoSizer>
+            <AutoSizer disableHeight>
                 {({width}) =>
                     <MultiGrid
                         {...this.state}
@@ -237,8 +235,7 @@ class VirtualGrid extends Component {
                         columnCount={columnKeys.length}
                         enableFixedColumnScroll
                         enableFixedRowScroll
-                        columnWidth={this._cache.columnWidth}
-                        deferredMeasurementCache={this._cache}
+                        columnWidth={150}
                         height={componentHeight}
                         rowHeight={40}
                         overscanColumnCount={5}

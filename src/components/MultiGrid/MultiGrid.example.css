@@ -11,3 +11,7 @@
   text-overflow: inherit;
   overflow: visible;
 }
+
+.hoveredItem {
+  background-color: rgba(0, 0, 0, .1);
+}

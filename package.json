@@ -8,6 +8,7 @@
     "react-bootstrap": "^0.31.3",
     "react-color": "^2.13.8",
     "react-dom": "^16.0.0",
+    "react-resizable": "^1.7.5",
     "react-scripts": "1.0.14",
     "react-virtualized": "^9.10.1"
   },
