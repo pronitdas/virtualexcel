@@ -2,20 +2,29 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import registerServiceWorker from './registerServiceWorker';
 
-
-const data = require("./data.json");
-
-const options = {
-    headerColor:"#79a1ce",
-    primaryColor:"white",
-    secondaryColor:"#d9e8ff",
-    headerFontSize:"18px",
-    cellFontSize:"16px",
-    columnWidth:100,
-    componentHeight:1000,
-    width:1400,
-    data:data,
+let data= require("./data.json");
+let options = {
+    headerColor:"#CACFD2", // set header color
+    primaryColor:"#B2BABB", // set primary row color
+    secondaryColor:"#AED6F1", // set secondary row color
+    headerFontSize:"18px", // set header font size
+    cellFontSize:"16px", // set cell font size
+    // componentHeight:700, // set component heigth
+    // componentWidth:1400, // set component width
+    element:"root", // set the mounting element
+    minColumnWidth:100, // set the min column width
+    maxColumnWidth:250, // set the max column width
+    minRowHeight:50, // set the min row height
+    maxRowHeight:100, // set the max row height
+    maxRowCount:15, // set the max column count
+    maxColCount:15, // set the max column count
+    data:data // set the data source
 };
 
-ReactDOM.render(<App options={options} />, document.getElementById('root'));
+let element = options.element && options.element.length>0 ? document.getElementById(options.element) : document.getElementById('root');
+
+
+ReactDOM.render(<App options={options}/>, element);
+registerServiceWorker();
