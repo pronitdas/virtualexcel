@@ -7,6 +7,7 @@ import { Resizable, ResizableBox } from 'react-resizable';
 const STYLE_BOTTOM_RIGHT_GRID= {
     border: "1px solid #ddd",
     verticalAlign:"middle"
+
 };
 const STYLE_BOTTOM_LEFT_GRID = {
     backgroundColor: "whitesmoke",
@@ -33,6 +34,7 @@ const STYLE_HEADER = {
     borderRight: "1px solid #eee",
     whiteSpace: "nowrap",
     textOverflow: "ellipsis",
+    overflow: "hidden",
     paddingLeft:"20px",
     paddingRight:"20px",
     fontWeight:"900",
@@ -88,10 +90,8 @@ class VirtualGrid extends Component {
             rowIndices =_.difference(rowIndices, numbers);
             // rowIndices =_.difference([String(0)] , columnIndices);
             rowIndices =_.concat(numbers, rowIndices);
-            console.log(rowIndices);
-            this.setState({fixedRowCount:lockedRowIndices.length+1});
-        }else {
-            this.setState({fixedRowCount:1});
+
+            this.setState({fixedRowCount:lockedRowIndices.length});
         }
         rowIndices.unshift("-1");
         this.setState({columnIndices,rowIndices});
@@ -142,80 +142,69 @@ class VirtualGrid extends Component {
             hoveredRowIndex: rowIndex
         });
     }
+
     _cellRenderer({ columnIndex, key, parent, rowIndex, style }) {
        let { rowIndices , columnIndices , hoveredColumnIndex , hoveredRowIndex} = this.state;
-       const { primaryColor , rowHeight,secondaryColor ,lockedColumnKeys,
-           lockedRowIndices, colWidth, headerColor,onFreezeColHandle, headerFontSize , cellFontSize, columnKeys, data ,
-           handleColResize, maxColumnWidth , minColumnWidth , maxRowHeight , minRowHeight} = this.props;
+       const { primaryColor , secondaryColor ,lockedColumnKeys,lockedRowIndices, colWidth, headerColor, headerFontSize , cellFontSize, columnKeys, data , handleColResize} = this.props;
         if(!rowIndices || !columnIndices){
             rowIndices = _.times(columnKeys.length, String);
             columnIndices = _.times(data.length , String);
         }
+        // let width= colWidth[columnIndex];
+        // style = _.assign(style,{width});
 
-        // some how implementing col ressizer
-        let width= style.width + colWidth[columnIndex];
-        style = _.assign(style,{width});
-        let calcLeft = columnIndex > 0 ?_.slice(colWidth,0,columnIndex) : 0;
-
-        calcLeft = style.left + _.sum(calcLeft);
-
-        style = _.assign(style,{left:calcLeft});
-
-
-        if(rowIndices[rowIndex] === "-1"){
+        if(rowIndex === 0){
+            // some how implementing col ressizer
+            // let calcLeft = columnIndex > 0 ?_.slice(colWidth,0,columnIndex-1) : 0;
+            // calcLeft = _.sum(calcLeft);
+            // console.log("abhi tak ka hisab" + `${rowIndex}- ${columnIndex}`,style.left,colWidth, style.left - calcLeft);
+            // style = _.assign(style,{left:calcLeft});
             if(columnIndices[columnIndex] === "-1"){
-                style = _.assign(style,STYLE_HEADER);
-                return (
-                    <div key={`${rowIndex}-${columnIndex}`} style={style}>
+                style = _.assign(style,STYLE_CELL);
+                return (<div style={style}>
+
                     </div>
+
                 );
             } else {
                 style = _.includes(lockedColumnKeys , columnKeys[columnIndices[columnIndex]]) ?_.assign(style, STYLE_HEADER, {backgroundColor:"white",color:"black" , fontSize:headerFontSize})
-                    : _.assign(style,STYLE_HEADER ,{backgroundColor:headerColor,color:"white" , fontSize:headerFontSize});
+                    : _.assign(style,STYLE_HEADER ,{backgroundColor:STYLE_HEADER,color:"white" , fontSize:headerFontSize});
                     return (
-                        <Resizable className={`col${columnIndex}`}
-                                   height={rowHeight}
-                                   width={colWidth[columnIndex]}
-                                   onResizeStop={(data ,{element ,size}) =>{
-                                       handleColResize(size,columnIndex);
-                                   } }
-                                   axis="x"
-                                   key={key}
-                        >
-                            <div  className={`font-weight-bold  col${columnIndex}`} id={`col${columnIndex}`} style={style}>
-                                <span title={_.startCase(columnKeys[columnIndices[columnIndex]])} className="truncate p-t-10 freezeCol align-middle"
-                                      onClick={ ()=> {
-                                          let idea = columnIndices[columnIndex] + ","+ columnKeys[columnIndices[columnIndex]];
-                                          if(columnIndex>0){
-                                             onFreezeColHandle(idea);
-                                          }
-                                      }}
-                                >
-                                    <strong> {_.startCase(columnKeys[columnIndices[columnIndex]])} </strong>
-                                </span>
+
+                            <div key={`${rowIndex}-${columnIndices[columnIndex]}`} onClick={ ()=> {
+                                let idea = columnIndices[columnIndex] + ","+ columnKeys[columnIndices[columnIndex]];
+                                if(columnIndex>0){
+                                    this.props.onFreezeColHandle(idea);
+                                }
+                            }} className={`font-weight-bold  col${columnIndex}`} id="col" style={style}>
+                    <span title={_.startCase(columnKeys[columnIndices[columnIndex]])} className="align-middle">
+                        <strong> {_.startCase(columnKeys[columnIndices[columnIndex]])} </strong>
+                    </span>
                             </div>
-                        </Resizable>
+
                     );
                 }
             } else {
             if(columnIndices[columnIndex] === "-1"){
                 style = _.assign(style,STYLE_CELL);
                 return (
-                    <div key={key} style={style}  >
+
+
+                        <div key={key} style={style}  >
                             <label className="switch">
                                 <input type="checkbox" onChange={ ()=> {
                                     this.props.onFreezeRowHandle(rowIndices[rowIndex]);
                                 }} checked={_.includes(lockedRowIndices , rowIndices[rowIndex])}/>
                                 <span className="slider round"></span>
                             </label>
-                    </div>
+                        </div>
+
                    );
             } else {
                 style = _.assign(style,STYLE_CELL ,{fontSize:cellFontSize});
-
-
+                // style.width= colWidth[columnIndex];
                 //alternate colour logic
-
+                // if(lockedColumnIndices.length === 0 && lockedRowIndices.length === 1){
                 if(rowIndex% 2===0 ){
                     let backgroundColor = primaryColor ? primaryColor : "white";
                     // let color = primaryColor ? "white" : "black";
@@ -228,7 +217,7 @@ class VirtualGrid extends Component {
                     let color =  "black";
                     style = _.assign(style,{backgroundColor ,color});
                 }
-
+                // }
                 let className = (hoveredColumnIndex || hoveredRowIndex) ? `hoveredItem` : ``;
                 return (
                     <div className={`no-overflow col${columnIndex} ${className}` }  title={data[rowIndices[rowIndex]][columnKeys[columnIndices[columnIndex]]].toString()} key={key} style={style}>
@@ -238,13 +227,14 @@ class VirtualGrid extends Component {
                     </div>
 
                 );
-            }
+        }
         }
     }
 
     _createEventHandler(property) {
         return event => {
             const value = parseInt(event.target.value, 10) || 0;
+
             this.setState({
                 [property]: value
             });
@@ -265,7 +255,7 @@ class VirtualGrid extends Component {
     }
     componentDidUpdate(prevProps , prevState){
         const { primaryColor, secondaryColor, headerFontSize,cellFontSize,
-            lockedRowIndices, componentHeight, lockedColumnIndices, headerColor, colWidth} = this.props;
+            lockedRowIndices, componentHeight, lockedColumnIndices, headerColor} = this.props;
         if (primaryColor !== prevProps.primaryColor ||
             secondaryColor !== prevProps.secondaryColor ||
             headerFontSize!==prevProps.headerFontSize ||
@@ -276,12 +266,6 @@ class VirtualGrid extends Component {
             headerColor !== prevProps.headerColor
         ){
             this._grid.forceUpdate();
-        }
-
-        if(!_.isEqual(colWidth,prevProps.colWidth)){
-            this._grid.forceUpdate();
-
-        } else{
         }
     }
     shouldComponentUpdate(nextProps, nextState){
@@ -301,14 +285,13 @@ class VirtualGrid extends Component {
     render() {
         const {TopLeftGridStyle,TopRightGridStyle , BottomLeftGridStyle,BottomRightGridStyle} = this.state;
         const {componentHeight , data ,componentWidth, rowHeight,columnKeys, columnWidth} = this.props;
-        return (
-            <div style={{width:"100%"}}>
-                <AutoSizer disableHeight>
+        return (<div style={{width:"100%"}}>
+            <AutoSizer disableHeight>
                 {({ width }) =>
-                    <MultiGrid
+            <MultiGrid
                         ref={(ref) => this._grid = ref}
                         {...this.state}
-                        tabIndex={10}
+                        tabIndex={1}
                         cellRenderer={this._cellRenderer}
                         columnCount={columnKeys.length+1}
                         enableFixedColumnScroll
@@ -326,9 +309,8 @@ class VirtualGrid extends Component {
                         styleBottomRightGrid={BottomRightGridStyle}
                         width={width}
                     />}
-                </AutoSizer>
-            </div>
-        );
+            </AutoSizer>
+        </div> );
     }
 }
 
