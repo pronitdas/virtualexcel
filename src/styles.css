@@ -313,3 +313,7 @@ body {
 .navbar-fixed-bottom{
   position: inherit;
 }
+
+.freezeCol{
+  cursor:pointer;
+}

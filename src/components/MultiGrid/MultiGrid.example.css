@@ -15,3 +15,18 @@
 .hoveredItem {
   background-color: rgba(0, 0, 0, .1);
 }
+
+.react-resizable {
+  position: relative;
+}
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 50px;
+  right: 0;
+  background-position: bottom right;
+  padding: 0 3px 3px 0;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  cursor: col-resize;
+}

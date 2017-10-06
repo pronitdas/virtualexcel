@@ -5,13 +5,19 @@ import * as _ from 'lodash';
 import './styles.css';
 const defaultOptions = {
     headerColor:"",
-    primaryColor:"whitesmoke",
+    primaryColor:"#f5f5f5",
     secondaryColor:"#d9e8ff",
     headerFontSize:"18px",
     cellFontSize:"16px",
     columnWidth:100,
     componentHeight:1500,
     width:1400,
+    minColumnWidth:100,
+    maxColumnWidth:250,
+    minRowHeight:50,
+    maxRowHeight:100,
+    maxRowCount:15,
+    maxColCount:10,
 };
 const defaultData = require("./data.json");
 // externalized it
@@ -24,7 +30,7 @@ class App extends Component {
       this.state = {
           primaryColor:props.options.primaryColor || defaultOptions.primaryColor,
           secondaryColor:props.options.secondaryColor || defaultOptions.secondaryColor,
-          lockedRowIndices:[0],
+          lockedRowIndices:[],
           lockedColumnIndices:[],
           headerColor:props.options.headerColor || defaultOptions.headerColor,
           columnWidth:props.options.columnWidth || defaultOptions.columnWidth,
@@ -47,41 +53,46 @@ class App extends Component {
       this.freezeColumn = this.freezeColumn.bind(this);
   }
     componentWillMount(){
-        const {columnKeys} = this.state;
-            console.log("this.props" ,this.props);
-            let colWidths = _.map(columnKeys ,()=>{
-                return 150;
-            });
-
-            colWidths[1]=170;
-            console.log(colWidths);
-            this.setState({colWidths});
+        this.setDefaultWidth();
         this.calculateHeightAndWidth();
     }
 
+
+    setDefaultWidth(){
+        const {columnKeys} = this.state;
+        let colWidths = _.map(columnKeys ,()=>{
+            return 0;
+        });
+
+        this.setState({colWidths});
+    }
+
     handlePrimaryColorChange(color){
-        console.log(color);
         this.setState({primaryColor:color.hex});
     }
 
     handleHeaderColorChange(color){
-        console.log(color);
         this.setState({headerColor:color.hex});
     }
     handleSecondaryColorChange(color){
         this.setState({secondaryColor:color.hex});
     }
 
-    onResize(event,data,columnIndex) {
-        console.log(data.size.width);
-        const {colWidths} = this.state;
-        colWidths[columnIndex] = data.size.width;
-        this.setState({colWidths});
+    onResize(data,columnIndex) {
+        const {colWidths ,columnWidth,lockedColumnIndices} = this.state;
+        let colWidth = _.cloneDeep(colWidths);
+        if(lockedColumnIndices.length ===0) {
+            colWidth[columnIndex] = data.width;
+            this.setState({colWidths:colWidth});
+            this.setState({count:this.state.count+1});
+        }
+
     };
+
+
     freezeRow(rowId){
         let { lockedRowIndices } = this.state;
         if(_.includes(lockedRowIndices , rowId)){
-            console.log(rowId);
             lockedRowIndices = _.remove(lockedRowIndices,(a)=> a!==rowId);
             this.setState({lockedRowIndices});
         } else {
@@ -106,7 +117,6 @@ class App extends Component {
             } else {
                 lockedColumnIndices =[];
             }
-            console.log("after splice" , lockedColumnIndices);
             this.setState({lockedColumnIndices});
         } else {
             lockedColumnIndices.push(keyId);
@@ -114,48 +124,54 @@ class App extends Component {
         }
         lockedColumnKeys = _.map(lockedColumnIndices , (a) => columnKeys[a]);
 
+        if(lockedColumnIndices.length > 0){
+            this.setDefaultWidth();
+        }
+
         this.setState({count:this.state.count+1,lockedColumnKeys});
     }
 
   calculateHeightAndWidth(){
         let {options: {minColumnWidth,componentHeight,componentWidth,maxColumnWidth,minRowHeight,maxRowHeight,maxRowCount,maxColCount}} = this.props;
         const {data} =this.state;
+        minColumnWidth = minColumnWidth > 0 ? minColumnWidth : defaultOptions.minColumnWidth ;
+        maxColumnWidth = maxColumnWidth > 0 ? maxColumnWidth : defaultOptions.maxColumnWidth ;
+        minRowHeight = minRowHeight > 0 ? minRowHeight : defaultOptions.minRowHeight ;
+        maxRowHeight = maxRowHeight > 0 ? maxRowHeight : defaultOptions.maxRowHeight ;
+        maxRowCount = maxRowCount > 0 ? maxRowCount : defaultOptions.maxRowCount ;
+        maxColCount = maxColCount > 0 ? maxColCount : defaultOptions.maxColCount ;
 
-        console.log("minColumnWidth,componentHeight,componentWidth,maxColumnWidth,minRowHeight,maxRowHeight,maxRowCount,maxColCount",minColumnWidth,componentHeight,componentWidth,maxColumnWidth,minRowHeight,maxRowHeight,maxRowCount,maxColCount);
+
         if(componentHeight && maxRowCount){
             let rowHeight = maxRowCount < data.length  ? componentHeight / (maxRowCount+1) : componentHeight / (data.length+1)  ;
             rowHeight = (rowHeight > maxRowHeight) ? maxRowHeight : (rowHeight < minRowHeight) ? minRowHeight : rowHeight;
 
-            console.log("rowHeight" , rowHeight);
             this.setState({rowHeight});
         } else{
             componentHeight =  maxRowCount < data.length  ? 20 + (minRowHeight * (maxRowCount+1)) : 20 + (minRowHeight * (data.length+1)) ;
-            console.log("compHeight",componentHeight);
             this.setState({componentHeight});
         }
-
+      let colCount = _.keysIn(data[0]).length;
       if(componentWidth && maxColCount){
-          let columnWidth = componentWidth/ (maxColCount+1);
+          let columnWidth =colCount > maxColCount ? componentWidth/ (maxColCount+1) : componentWidth/ (colCount+1) ;
           columnWidth = (columnWidth > maxColumnWidth) ? maxRowHeight : (columnWidth < minColumnWidth) ? minColumnWidth : columnWidth;
-          console.log("colWidth",columnWidth);
+          let suggestedWidth = columnWidth * (colCount+1) ;
+          if(componentWidth > suggestedWidth){
+              componentWidth = suggestedWidth;
+              this.setState({componentWidth});
+          }
           this.setState({columnWidth});
-
-      }
-      else{
-          let colCount = _.keysIn(data[0]).length;
-          componentWidth = maxColCount < colCount ?  20 + (minColumnWidth * (maxColCount+1)) : (minColumnWidth * (colCount+1));
+      } else{
+          componentWidth = maxColCount < colCount ?  20 + (maxColumnWidth * (colCount+1)) : (minColumnWidth * (maxColCount+1));
           this.setState({componentWidth});
-          console.log("comp Width",componentWidth);
       }
-
-
-  }
+    }
 
   render() {
       const { primaryColor, data, lockedColumnKeys,count, colWidths,columnKeys, componentWidth,secondaryColor,
-          headerFontSize,cellFontSize, lockedRowIndices,rowHeight, componentHeight, lockedColumnIndices, headerColor, columnWidth} = this.state;
+          headerFontSize,cellFontSize, lockedRowIndices,rowHeight, componentHeight, lockedColumnIndices, headerColor, columnWidth
 
-
+      } = this.state;
 
       return (
           <div id="vgrid" className="mx-auto" style={{maxHeight:componentHeight,maxWidth:componentWidth}}>
