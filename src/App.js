@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
 import VirtualGrid from "./components/MultiGrid/VirtualGrid";
-import { Row , Col, Grid } from 'react-bootstrap';
 import * as _ from 'lodash';
 import './styles.css';
-import Header from "./components/Header";
-import Footer from "./components/Footer";
 const defaultOptions = {
     headerColor:"",
     primaryColor:"whitesmoke",
@@ -161,49 +158,32 @@ class App extends Component {
 
 
       return (
-          <div>
-              <Header/>
-              <div>
-                  <Grid>
-                      <Row className="show-grid">
-                          <Col xs={6} md={11} sm={11}>
-                              <div id="vgrid" style={{maxWidth:componentWidth}}>
-                                  {data  && colWidths &&
-                                      <VirtualGrid
-                                          headerColor={headerColor}
-                                          primaryColor={primaryColor}
-                                          secondaryColor={secondaryColor}
-                                          lockedColumnIndices={lockedColumnIndices}
-                                          lockedRowIndices={lockedRowIndices}
-                                          columnWidth={columnWidth}
-                                          componentHeight={componentHeight}
-                                          rowHeight={rowHeight}
-                                          headerFontSize={headerFontSize}
-                                          cellFontSize={cellFontSize}
-                                          componentWidth={componentWidth}
-                                          data={data}
-                                          columnKeys={columnKeys}
-                                          handleColResize={this.onResize}
-                                          colWidth={colWidths}
-                                          onFreezeColHandle={this.freezeColumn}
-                                          onFreezeRowHandle={this.freezeRow}
-                                          key={count}
-                                          lockedColumnKeys={lockedColumnKeys}
-                                      />
-                                  }
-                              </div>
-                          </Col>
-                      </Row>
-                  </Grid>
-              </div>
-              <footer class="footer">
-                  <div class="container">
-                      <span style={{"fontSize":"14px","color":"#FFFF"}}>
-                            Copyright @Arkenea Technologies (2017)
-                        </span>
-                  </div>
-              </footer>
-      </div>
+          <div id="vgrid" className="mx-auto" style={{maxHeight:componentHeight,maxWidth:componentWidth}}>
+              {data  && colWidths &&
+                  <VirtualGrid
+                      headerColor={headerColor}
+                      primaryColor={primaryColor}
+                      secondaryColor={secondaryColor}
+                      lockedColumnIndices={lockedColumnIndices}
+                      lockedRowIndices={lockedRowIndices}
+                      columnWidth={columnWidth}
+                      componentHeight={componentHeight}
+                      rowHeight={rowHeight}
+                      headerFontSize={headerFontSize}
+                      cellFontSize={cellFontSize}
+                      componentWidth={componentWidth}
+                      data={data}
+                      columnKeys={columnKeys}
+                      handleColResize={this.onResize}
+                      colWidth={colWidths}
+                      onFreezeColHandle={this.freezeColumn}
+                      onFreezeRowHandle={this.freezeRow}
+                      key={count}
+                      lockedColumnKeys={lockedColumnKeys}
+                  />
+              }
+          </div>
+
       );
   }
 }
